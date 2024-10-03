@@ -1,6 +1,6 @@
 services:
   db:
-    container_name: fitbit-db
+    container_name: fitbet-db
     image: postgres:latest
     restart: always
     environment:
