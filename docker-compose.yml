@@ -1,4 +1,15 @@
 services:
+
+  fitbet-backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fitbet-backend
+    ports:
+      - 4000:4000
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/fitbetDB?schema=public
+  
   db:
     container_name: fitbet-db
     image: postgres:latest
