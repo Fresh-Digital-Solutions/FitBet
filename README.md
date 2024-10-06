@@ -34,4 +34,21 @@ Prerequisites
 ├── package.json             # Root-level package.json to manage project dependencies
 └── README.md                # Project overview and setup instructions
 ```
+### Get Started
+1. Get the local database and server started
+```bash
+docker-compose --build -d 
+```
+2. Prisma migration (This command must be ran when making changes to the schema. This will apply to our local database)
+```bash
+docker exec -it fitbet-backend npx prisma migrate dev
+```
+3. Setup Mobile
+```bash
+cd mobile
 
+npm install
+
+npx expo start 
+```
+4. We are using Expo so download the app and it will show up there. 
