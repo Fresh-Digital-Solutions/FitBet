@@ -37,7 +37,7 @@ Prerequisites
 ### Get Started
 1. Get the local database and server started
 ```bash
-docker-compose --build -d 
+docker-compose up --build -d 
 ```
 2. Prisma migration (This command must be ran when making changes to the schema. This will apply to our local database)
 ```bash
