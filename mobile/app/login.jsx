@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Link, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { View, Text, ScrollView, Dimensions, Alert, Image, StyleSheet } from "react-native";
-import  CustomButton  from "../components/CustomButton";
-import  FormField  from "../components/FormField";
+import CustomButton from "../components/CustomButton";
+import FormField from "../components/FormField";
 import { AntDesign } from '@expo/vector-icons';
 import icon from '../assets/images/icon.png';
+import { login } from "../apis/auth"; // Import the login function
 
 const LoginScreen = () => {
   const [isSubmitting, setSubmitting] = useState(false);
@@ -21,28 +22,28 @@ const LoginScreen = () => {
     }
 
     setSubmitting(true);
-    // Perform the sign-in logic here
-    setSubmitting(false);
-  };
-
-  const loginWithGoogle = async () => {
-    if (form.email === "" || form.password === "") {
-      Alert.alert("Error", "Please fill in all fields");
-      return;
+    try {
+      // Call the login API
+      const response = await login({
+        email: form.email,
+        password: form.password,
+      });
+      
+      // If login is successful, redirect to the /home route
+      Alert.alert("Success", "Login successful");
+      router.push('/home');
+    } catch (error) {
+      Alert.alert("Error", error.message);
     }
-
-    setSubmitting(true);
-    // Perform the sign-in logic here
     setSubmitting(false);
   };
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.container}>
           <Image source={icon} style={styles.logo} resizeMode="contain" />
-
-
 
           <FormField
             title="Email"
@@ -57,6 +58,7 @@ const LoginScreen = () => {
             value={form.password}
             handleChangeText={(e) => setForm({ ...form, password: e })}
             otherStyles={styles.formField}
+            secureTextEntry
           />
 
           <CustomButton
@@ -65,17 +67,8 @@ const LoginScreen = () => {
             containerStyles={styles.button}
             isLoading={isSubmitting}
           />
-           <CustomButton
-            title="Sign In with Google"
-            handlePress={loginWithGoogle}
-            containerStyles={[styles.button, styles.googleButton]}
-            textStyles={styles.googleButtonText}
-            icon={() => (
-              <AntDesign name="google" size={24} color="black" />
-            )}
-          />
 
-           
+
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>
@@ -115,17 +108,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 20,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginTop: 40,
-    textAlign: 'center',
-  },
   formField: {
     marginTop: 2,
   },
-  
   button: {
     marginTop: 23,
   },
