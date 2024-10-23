@@ -6,17 +6,24 @@ import CustomButton from "../components/CustomButton";
 import FormField from "../components/FormField";
 import { AntDesign } from '@expo/vector-icons';
 import icon from '../assets/images/icon.png';
+import { signup } from "../apis/auth"; // Import the signup function
 
 const SignUpScreen = () => {
   const [isSubmitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
+    name: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
 
   const submit = async () => {
-    if (form.email === "" || form.password === "" || form.confirmPassword === "") {
+    if (
+      form.name === "" ||
+      form.email === "" ||
+      form.password === "" ||
+      form.confirmPassword === ""
+    ) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
@@ -26,21 +33,36 @@ const SignUpScreen = () => {
     }
 
     setSubmitting(true);
-    // Perform the sign-up logic here
+    try {
+      // Call the signup API
+      const response = await signup({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+      });
+      Alert.alert("Success", "Sign-up successful");
+
+      // Redirect to the /home route in the (tabs) folder
+      router.push('/home');
+    } catch (error) {
+      Alert.alert("Error", error.message);
+    }
     setSubmitting(false);
   };
 
-  const signUpWithGoogle = async () => {
-    setSubmitting(true);
-    // Perform the Google sign-up logic here
-    setSubmitting(false);
-  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.container}>
           <Image source={icon} style={styles.logo} resizeMode="contain" />
+
+          <FormField
+            title="Name"
+            value={form.name}
+            handleChangeText={(e) => setForm({ ...form, name: e })}
+            otherStyles={styles.formField}
+          />
 
           <FormField
             title="Email"
@@ -71,16 +93,6 @@ const SignUpScreen = () => {
             handlePress={submit}
             containerStyles={styles.button}
             isLoading={isSubmitting}
-          />
-
-          <CustomButton
-            title="Sign Up with Google"
-            handlePress={signUpWithGoogle}
-            containerStyles={[styles.button, styles.googleButton]}
-            textStyles={styles.googleButtonText}
-            icon={() => (
-              <AntDesign name="google" size={24} color="black" />
-            )}
           />
 
           <View style={styles.footer}>
