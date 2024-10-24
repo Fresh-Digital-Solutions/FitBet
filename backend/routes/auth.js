@@ -1,21 +1,35 @@
 const express = require('express');
 const passport = require('../passportConfig');
-const verifyToken = require('../middleware/verifyToken');
-const refreshToken = require('../middleware/refreshToken');
+const authenticateToken = require('../middleware/authenticateToken');
 const { registerUser, loginUser, logoutUser } = require('../controllers/authController');
 
 const router = express.Router();
 
-// Registration route
-router.post('/register', registerUser);
+const rateLimit = require('express-rate-limit');
 
-// Login route
-router.post('/login', passport.authenticate('local', { session: false }), loginUser);
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5 // limit each IP to 5 requests per windowMs
+});
 
-// Refresh token route
-router.post('/refresh-token', refreshToken);
 
-// Logout route
-router.post('/logout', verifyToken, logoutUser);
+router.post('/register', authLimiter, registerUser);
+
+router.post('/login', 
+  authLimiter,
+  passport.authenticate('local', { 
+    session: false,
+    failWithError: true 
+  }),
+  loginUser,
+  (error, req, res, next) => {
+    res.status(401).json({ 
+      message: 'Invalid credentials',
+      code: 'INVALID_CREDENTIALS'
+    });
+  }
+);
+
+router.post('/logout', authenticateToken, logoutUser);
 
 module.exports = router;

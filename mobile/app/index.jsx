@@ -1,11 +1,29 @@
 import { StatusBar } from "expo-status-bar";
-import { Redirect, router } from "expo-router";
-import { View, Text, Image, ScrollView, StyleSheet } from "react-native";
+import { router } from "expo-router";
+import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import icon from '../assets/images/icon.png';
-import CustomButton from '../components/CustomButton'
+import CustomButton from '../components/CustomButton';
+import { useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Index() {
+  // const { isLoggedIn, loading } = useAuth();
+
+  // useEffect(() => {
+  //   if (!loading && isLoggedIn) {
+  //     router.replace('(tabs)/home'); // Redirect to the main app if logged in
+  //   }
+  // }, [isLoggedIn, loading]);
+
+  // if (loading) {
+  //   return (
+  //     <View style={styles.loadingContainer}>
+  //       <ActivityIndicator size="large" color="#43B14B" />
+  //     </View>
+  //   );
+  // }
+
   return (
     <SafeAreaView style={styles.safeContainer}>
       <ScrollView contentContainerStyle={{ height: "100%" }}>
@@ -66,4 +84,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-

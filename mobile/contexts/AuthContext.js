@@ -1,47 +1,52 @@
-import React, { createContext, useState, useEffect } from 'react';
-import * as SecureStore from 'expo-secure-store';
-import { router } from 'expo-router';
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { useRouter } from 'expo-router';
+import { getToken, deleteToken } from '../services/auth'; // Ensure to import the API functions for token management
 
-// Create the authentication context
-export const AuthContext = createContext();
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
-  // Check for token in SecureStore when the app loads
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        const token = await SecureStore.getItemAsync('accessToken');
-        if (token) {
-          setIsAuthenticated(true);
-          router.replace('/home'); // Redirect to home if authenticated
-        } else {
-          setIsAuthenticated(false);
-          router.replace('/login'); // Redirect to login if not authenticated
-        }
-      } catch (error) {
-        console.error('Error checking authentication status:', error);
-        setIsAuthenticated(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuthStatus();
-  }, []);
-
-  // Log out function to clear the token and redirect to login
-  const logout = async () => {
-    await SecureStore.deleteItemAsync('accessToken');
-    setIsAuthenticated(false);
-    router.replace('/login');
+  // Check if the user is logged in
+  const checkLoginStatus = async () => {
+    setLoading(true);
+    const accessToken = await getToken('accessToken');
+    const refreshToken = await getToken('refreshToken')
+    if (accessToken && refreshToken) {
+      setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
+    }
+    setLoading(false);
   };
 
+  // Logout function
+  const logout = async () => {
+    await deleteToken('accessToken');
+    await deleteToken('refreshToken');
+    setIsLoggedIn(false);
+    router.push('/'); // Redirect to the welcome page
+  };
+
+  // Login function
+  const login = async () => {
+    setIsLoggedIn(true);
+    router.push('(tabs)'); // Redirect to the main app
+  };
+
+  useEffect(() => {
+    checkLoginStatus();
+  }, []);
+
+ 
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, loading, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
 };
+
+export const useAuth = () => useContext(AuthContext);
