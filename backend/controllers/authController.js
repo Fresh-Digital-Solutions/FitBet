@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 // Register user
 const registerUser = async (req, res) => {
   const { email, password, name } = req.body;
-    console.log("Register called:", req.body)
+  console.log("Register called:", req.body);
   try {
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
@@ -24,7 +24,14 @@ const registerUser = async (req, res) => {
       },
     });
 
-    res.status(201).json({ message: 'User registered successfully' });
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    res.status(201).json({ 
+      message: 'User registered successfully', 
+      accessToken, 
+      refreshToken 
+    });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
