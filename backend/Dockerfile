@@ -10,7 +10,7 @@ COPY package*.json ./
 RUN npm install
 
 # Copy the Prisma schema file
-COPY prisma ./prisma
+COPY prisma ./prisma/
 
 # Generate Prisma client
 RUN npx prisma generate
@@ -18,8 +18,9 @@ RUN npx prisma generate
 # Copy the rest of the backend code
 COPY . .
 
-# Expose the port the app runs on
-EXPOSE 8001
+# Expose both the application and Prisma Studio ports
+EXPOSE 4000
+EXPOSE 5555
 
-# Command to run the application
-CMD ["node", "index.js"]
+# Add a start script that includes database migrations
+CMD ["/bin/sh", "-c", "npx prisma migrate deploy && npx prisma generate && node index.js"]

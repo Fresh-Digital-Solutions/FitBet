@@ -2,35 +2,46 @@ import { useState } from "react";
 import { Link, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { View, Text, ScrollView, Dimensions, Alert, Image, StyleSheet } from "react-native";
-import CustomButton from "../components/CustomButton";
-import FormField from "../components/FormField";
-import { AntDesign } from '@expo/vector-icons';
-import icon from '../assets/images/icon.png';
-import { login } from "../apis/auth"; // Import the login function
+import CustomButton from "../../components/CustomButton";
+import FormField from "../../components/FormField";
+import icon from '../../assets/images/icon.png';
+import { signup } from "../../services/auth"; // Import the signup function
 
-const LoginScreen = () => {
+const SignUpScreen = () => {
   const [isSubmitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
+    name: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
 
   const submit = async () => {
-    if (form.email === "" || form.password === "") {
+    if (
+      form.name === "" ||
+      form.email === "" ||
+      form.password === "" ||
+      form.confirmPassword === ""
+    ) {
       Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
+    if (form.password !== form.confirmPassword) {
+      Alert.alert("Error", "Passwords do not match");
       return;
     }
 
     setSubmitting(true);
     try {
-      // Call the login API
-      const response = await login({
+      // Call the signup API
+      const response = await signup({
+        name: form.name,
         email: form.email,
         password: form.password,
       });
-      
-      // If login is successful, redirect to the /home route
-      Alert.alert("Success", "Login successful");
+      Alert.alert("Success", "Sign-up successful");
+
+      // Redirect to the /home route in the (tabs) folder
       router.push('/home');
     } catch (error) {
       Alert.alert("Error", error.message);
@@ -44,6 +55,13 @@ const LoginScreen = () => {
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.container}>
           <Image source={icon} style={styles.logo} resizeMode="contain" />
+
+          <FormField
+            title="Name"
+            value={form.name}
+            handleChangeText={(e) => setForm({ ...form, name: e })}
+            otherStyles={styles.formField}
+          />
 
           <FormField
             title="Email"
@@ -61,24 +79,30 @@ const LoginScreen = () => {
             secureTextEntry
           />
 
+          <FormField
+            title="Confirm Password"
+            value={form.confirmPassword}
+            handleChangeText={(e) => setForm({ ...form, confirmPassword: e })}
+            otherStyles={styles.formField}
+            secureTextEntry
+          />
+
           <CustomButton
-            title="Sign In"
+            title="Sign Up"
             handlePress={submit}
             containerStyles={styles.button}
             isLoading={isSubmitting}
           />
 
-
-
           <View style={styles.footer}>
             <Text style={styles.footerText}>
-              Don't have an account?
+              Already have an account?
             </Text>
             <Link
-              href="/signup"
+              href="/login"
               style={styles.link}
             >
-              Signup
+              Login
             </Link>
           </View>
         </View>
@@ -140,4 +164,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginScreen;
+export default SignUpScreen;

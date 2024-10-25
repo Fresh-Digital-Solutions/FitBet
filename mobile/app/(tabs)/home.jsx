@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, Button } from 'react-native';
 import { router } from 'expo-router';
+import LogoutButton from '../../components/LogoutButton';
 
 const HomeScreen = () => {
   return (
@@ -11,6 +12,7 @@ const HomeScreen = () => {
           title="Go to Profile"
           onPress={() => router.push('/profile')}
         />
+        <LogoutButton />
     </View> 
   );
 };
