@@ -5,18 +5,13 @@ const { registerUser, loginUser, logoutUser } = require('../controllers/authCont
 
 const router = express.Router();
 
-const rateLimit = require('express-rate-limit');
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5 // limit each IP to 5 requests per windowMs
-});
 
 
-router.post('/register', authLimiter, registerUser);
+
+router.post('/register', registerUser);
 
 router.post('/login', 
-  authLimiter,
+  
   passport.authenticate('local', { 
     session: false,
     failWithError: true 

@@ -1,5 +1,4 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { useRouter } from 'expo-router';
 import { getToken, deleteToken } from '../services/auth'; // Ensure to import the API functions for token management
 
 const AuthContext = createContext();
@@ -7,7 +6,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
+ 
 
   // Check if the user is logged in
   const checkLoginStatus = async () => {
@@ -27,13 +26,12 @@ export const AuthProvider = ({ children }) => {
     await deleteToken('accessToken');
     await deleteToken('refreshToken');
     setIsLoggedIn(false);
-    router.push('/'); // Redirect to the welcome page
   };
 
   // Login function
   const login = async () => {
     setIsLoggedIn(true);
-    router.push('(tabs)'); // Redirect to the main app
+    
   };
 
   useEffect(() => {

@@ -8,21 +8,21 @@ import { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Index() {
-  // const { isLoggedIn, loading } = useAuth();
+  const { isLoggedIn, loading } = useAuth();
 
-  // useEffect(() => {
-  //   if (!loading && isLoggedIn) {
-  //     router.replace('(tabs)/home'); // Redirect to the main app if logged in
-  //   }
-  // }, [isLoggedIn, loading]);
+  useEffect(() => {
+    if (!loading && isLoggedIn) {
+      router.replace('(tabs)/home'); // Redirect to the main app if logged in
+    }
+  }, [isLoggedIn, loading]);
 
-  // if (loading) {
-  //   return (
-  //     <View style={styles.loadingContainer}>
-  //       <ActivityIndicator size="large" color="#43B14B" />
-  //     </View>
-  //   );
-  // }
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#43B14B" />
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeContainer}>

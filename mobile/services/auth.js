@@ -122,7 +122,7 @@ const logout = async () => {
       throw new Error('No access token available');
     }
 
-    const response = await api.post('/logout', null, {
+    const response = await api.post('/logout',  {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
       },
