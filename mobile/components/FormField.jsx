@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-import icons from '../constants/icons'; // Correctly import the icons
+import { View, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import icons from '../constants/icons'; // Make sure this import is correct
 
 const FormField = ({
   title,
@@ -12,10 +12,10 @@ const FormField = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
+  const isPasswordField = title === "Password" || title === "Confirm Password";
+
   return (
     <View style={[styles.fieldContainer, otherStyles]}>
-      <Text style={styles.label}>{title}</Text>
-
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.textInput}
@@ -23,12 +23,15 @@ const FormField = ({
           placeholder={placeholder}
           placeholderTextColor="#7B7B8B"
           onChangeText={handleChangeText}
-          secureTextEntry={(title === "Password" || title === "Confirm Password") && !showPassword}
+          secureTextEntry={isPasswordField && !showPassword} // Toggles secureTextEntry based on showPassword
           {...props}
         />
 
-        {(title === "Password" || title === "Confirm Password") && (
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+        {isPasswordField && (
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            style={styles.iconButton}
+          >
             {icons[showPassword ? 'eye' : 'eyeHide']({ size: 24, color: 'black' })}
           </TouchableOpacity>
         )}
@@ -40,11 +43,6 @@ const FormField = ({
 const styles = StyleSheet.create({
   fieldContainer: {
     marginBottom: 12,
-  },
-  label: {
-    fontSize: 16,
-    color: '#D3D3D3',
-    marginBottom: 8,
   },
   inputContainer: {
     width: '100%',
@@ -61,6 +59,9 @@ const styles = StyleSheet.create({
     flex: 1,
     color: '#000000',
     fontSize: 16,
+  },
+  iconButton: {
+    padding: 8,
   },
 });
 

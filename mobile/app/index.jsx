@@ -1,11 +1,13 @@
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
-import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import icon from '../assets/images/icon.png';
 import CustomButton from '../components/CustomButton';
 import { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import GoogleIcon from '../assets/images/Google.png';
+import AppleIcon from '../assets/images/Apple.png';
 
 export default function Index() {
   const { isLoggedIn, loading } = useAuth();
@@ -31,14 +33,33 @@ export default function Index() {
           <Image source={icon} style={styles.logo} resizeMode="contain" />
 
           <Text style={styles.subtitle}>
-            Challenge your friends, achieve your fitness goals, and have fun!
+            Crush your goals, compete with friends, and make every workout count.
           </Text>
 
           <CustomButton
-            title="Get Started"
+            title="Sign up free"
             handlePress={() => router.push("/signup")}
             containerStyles={styles.buttonPrimary}
           />
+          <CustomButton
+            title="Sign up with Google"
+            handlePress={() => console.log("Google Sign Up")}
+            containerStyles={styles.buttonSecondary}
+            textStyles={styles.textSecondary}
+            iconSource={GoogleIcon} 
+          />
+          <CustomButton
+            title="Sign up with Apple"
+            handlePress={() => console.log("Apple Sign Up")}
+            containerStyles={styles.buttonSecondary}
+            textStyles={styles.textSecondary}
+            iconSource={AppleIcon} 
+          />
+
+          {/* Login button */}
+          <TouchableOpacity onPress={() => router.push("/login")} style={styles.loginButton}>
+            <Text style={styles.loginText}>Login</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
       <StatusBar backgroundColor="#566072" style="light" />
@@ -58,14 +79,15 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   logo: {
-    width: 150,
-    height: 150,
+    width: 200,
+    height: 200,
     marginBottom: 20,
   },
   subtitle: {
     fontSize: 24,
     color: '#FFFFFF',
     textAlign: "center",
+    minWidth: '2.5rem',
     marginBottom: 40,
   },
   buttonPrimary: {
@@ -75,12 +97,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    width: '100%'
+    width: '100%',
+    marginBottom: 16,
   },
-  buttonText: {
+  buttonSecondary: {
+    borderColor: '#87DF4F',
+    borderWidth: 2,
+    borderRadius: 12,
+    minHeight: 62,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap:10,
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 16,
+    backgroundColor: 'transparent',
+  },
+  textSecondary: {
     color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
+  },
+  loginButton: {
+    marginTop: 16,
+  },
+  loginText: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight:"600"
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: '#566072',
   },
 });

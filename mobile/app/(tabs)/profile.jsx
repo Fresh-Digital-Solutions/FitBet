@@ -1,12 +1,14 @@
 // (tabs)/profile.js
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import LogoutButton from '../../components/LogoutButton'
 
 const ProfileScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Profile</Text>
       <Text style={styles.subtitle}>This is your profile page.</Text>
+      <LogoutButton />
     </View>
   );
 };
