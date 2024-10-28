@@ -1,5 +1,5 @@
 import React from "react";
-import { ActivityIndicator, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, StyleSheet, View, Image } from "react-native";
 
 const CustomButton = ({
   title,
@@ -7,6 +7,7 @@ const CustomButton = ({
   containerStyles,
   textStyles,
   isLoading,
+  iconSource, // Image source for the icon
 }) => {
   return (
     <TouchableOpacity
@@ -19,10 +20,16 @@ const CustomButton = ({
       ]}
       disabled={isLoading}
     >
+      {iconSource && (
+        <Image
+          source={iconSource}
+          style={styles.icon}
+          resizeMode="contain"
+        />
+      )}
       <Text style={[styles.text, textStyles]}>
         {title}
       </Text>
-
       {isLoading && (
         <ActivityIndicator
           animating={isLoading}
@@ -37,11 +44,10 @@ const CustomButton = ({
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#87DF4F', 
     borderRadius: 12,
     minHeight: 62,
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
   },
@@ -49,12 +55,17 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   text: {
-    color: '#FFFFFF', // Replace with your primary color
     fontSize: 18,
     fontWeight: '600',
   },
   loadingIndicator: {
     marginLeft: 8,
+  },
+  icon: {
+    position: 'absolute',
+    left: 16, // Position the icon on the far left
+    width: 40,
+    height: 40,
   },
 });
 

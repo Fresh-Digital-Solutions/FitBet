@@ -6,6 +6,8 @@ import CustomButton from "../../components/CustomButton";
 import FormField from "../../components/FormField";
 import icon from '../../assets/images/icon.png';
 import { login } from "../../services/auth"; // Import the login function
+import GoogleIcon from '../../assets/images/Google.png';
+import AppleIcon from '../../assets/images/Apple.png';
 
 const LoginScreen = () => {
   const [isSubmitting, setSubmitting] = useState(false);
@@ -47,6 +49,7 @@ const LoginScreen = () => {
           <FormField
             title="Email"
             value={form.email}
+            placeholder='Email'
             handleChangeText={(e) => setForm({ ...form, email: e })}
             otherStyles={styles.formField}
             keyboardType="email-address"
@@ -55,6 +58,7 @@ const LoginScreen = () => {
           <FormField
             title="Password"
             value={form.password}
+            placeholder='Password'
             handleChangeText={(e) => setForm({ ...form, password: e })}
             otherStyles={styles.formField}
             secureTextEntry
@@ -65,6 +69,21 @@ const LoginScreen = () => {
             handlePress={submit}
             containerStyles={styles.button}
             isLoading={isSubmitting}
+          />
+
+          <CustomButton
+            title="Continue with Google"
+            handlePress={() => console.log("Google Sign Up")}
+            containerStyles={styles.buttonSecondary}
+            textStyles={styles.textSecondary}
+            iconSource={GoogleIcon} 
+          />
+          <CustomButton
+            title="Continue with Apple"
+            handlePress={() => console.log("Apple Sign Up")}
+            containerStyles={styles.buttonSecondary}
+            textStyles={styles.textSecondary}
+            iconSource={AppleIcon} 
           />
 
 
@@ -111,7 +130,14 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   button: {
-    marginTop: 23,
+    backgroundColor: '#87DF4F',
+    borderRadius: 12,
+    minHeight: 62,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 16,
   },
   googleButton: {
     backgroundColor: '#FFFFFF',
@@ -134,8 +160,24 @@ const styles = StyleSheet.create({
   link: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#87DF4F', // Replace with your secondary color
+    color: '#87DF4F', 
     marginLeft: 8,
+  },
+  buttonSecondary: {
+    borderColor: '#87DF4F',
+    borderWidth: 2,
+    borderRadius: 12,
+    minHeight: 62,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap:10,
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 16,
+    backgroundColor: 'transparent',
+  },
+  textSecondary: {
+    color: '#FFFFFF',
   },
 });
 
