@@ -3,6 +3,7 @@ const cors = require('cors');
 const app = express();
 
 const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
 const passport = require('./passportConfig');
 app.use(express.json());
 app.use(cors());
@@ -10,6 +11,7 @@ app.use(cors());
 app.use(passport.initialize());
 
 app.use('/v1/auth', authRoutes);
+app.use('/v1/users', userRoutes);
 
 const PORT = process.env.port || 4000;
 
