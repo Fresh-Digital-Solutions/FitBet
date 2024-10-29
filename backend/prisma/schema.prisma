@@ -15,11 +15,37 @@ datasource db {
 
 
 model User {
-  id    String  @id @default(cuid())
-  email String  @unique
-  googleId String?  
-  password_hash String?
-  name  String?
-  created_at DateTime @default(now())
-  refreshTokenVersion Int? 
+  id                   String   @id @default(cuid())
+  email                String   @unique
+  googleId             String?  
+  password_hash        String?
+  name                 String?
+  created_at           DateTime @default(now())
+  refreshTokenVersion  Int? 
+
+  // Relations for friendships
+  friends              Friend[] @relation("UserFriends1")    // Sent friend requests (user_id1)
+  friendsWith          Friend[] @relation("UserFriends2")    // Received friend requests (user_id2)
+}
+
+model Friend {
+  id          String       @id @default(cuid())
+  user_id1    String
+  user_id2    String
+  status      FriendStatus
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
+  deleted_at  DateTime?    // Optional soft delete field
+
+  user1       User         @relation("UserFriends1", fields: [user_id1], references: [id]) // Sender
+  user2       User         @relation("UserFriends2", fields: [user_id2], references: [id]) // Receiver
+
+  @@unique([user_id1, user_id2])   // Prevents duplicate friendships
+  @@index([user_id1])              // Index for faster querying
+  @@index([user_id2])              // Index for faster querying
+}
+enum FriendStatus {
+  Pending
+  Accepted
+  Rejected
 }

@@ -1,14 +1,17 @@
 import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { router } from 'expo-router';
 
 
 const Header = ({ navigation }) => {
+  const onSubmit = () => {
+    router.push('/search')
+  }
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.iconContainer}>
-        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Search')}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/search')}>
           <FontAwesome name="search" size={20} color="#134611" />
         </TouchableOpacity>
       </View>

@@ -1,12 +1,27 @@
 // (tabs)/profile.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import LogoutButton from '../../components/LogoutButton'
+import { getUser } from '../../services/user';
 
 const ProfileScreen = () => {
+  const [user, setUser ] = useState({});
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await getUser();
+        console.log(userData)
+        setUser(userData)
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Profile</Text>
+      <Text style={styles.title}>{user.name}</Text>
       <Text style={styles.subtitle}>This is your profile page.</Text>
       <LogoutButton />
     </View>

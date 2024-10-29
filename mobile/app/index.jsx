@@ -38,7 +38,7 @@ export default function Index() {
 
           <CustomButton
             title="Sign up free"
-            handlePress={() => router.push("/signup")}
+            handlePress={() => router.replace("/signupWithEmail")}
             containerStyles={styles.buttonPrimary}
           />
           <CustomButton

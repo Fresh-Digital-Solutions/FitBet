@@ -1,16 +1,17 @@
 const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('@prisma/client');
 const { generateAccessToken, generateRefreshToken } = require('../utils/generateTokens');
+const jwt = require('jsonwebtoken');
 
 const prisma = new PrismaClient();
 
 
 const registerUser = async (req, res) => {
-  const { email, password, name } = req.body;
+  const { email, password } = req.body;
   
   try {
     
-    if (!email || !password || !name) {
+    if (!email || !password ) {
       return res.status(400).json({ 
         message: 'All fields are required',
         code: 'MISSING_FIELDS'
@@ -52,13 +53,11 @@ const registerUser = async (req, res) => {
       data: {
         email,
         password_hash: hashedPassword,
-        name,
         refreshTokenVersion: 1
       },
       select: {
         id: true,
         email: true,
-        name: true,
         refreshTokenVersion: true
       }
     });
@@ -71,7 +70,6 @@ const registerUser = async (req, res) => {
       user: {
         id: user.id,
         email: user.email,
-        name: user.name
       },
       accessToken, 
       refreshToken 
@@ -132,8 +130,73 @@ const logoutUser = async (req, res) => {
   }
 };
 
+
+const refreshAccessToken = async (req, res) => {
+  const refreshToken = req.headers['x-refresh-token'];
+
+  if (!refreshToken) {
+    return res.status(401).json({ 
+      message: 'Refresh token is required',
+      code: 'NO_REFRESH_TOKEN'
+    });
+  }
+
+  try {
+    // Verify the refresh token
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const userId = decoded.id;
+
+    // Fetch the user and check if the refresh token version matches
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        refreshTokenVersion: true
+      }
+    });
+
+    if (!user) {
+      return res.status(401).json({
+        message: 'User not found',
+        code: 'USER_NOT_FOUND'
+      });
+    }
+
+    // Ensure the refresh token version matches
+    if (user.refreshTokenVersion !== decoded.version) {
+      return res.status(401).json({
+        message: 'Refresh token has been invalidated',
+        code: 'TOKEN_VERSION_MISMATCH'
+      });
+    }
+
+    // Generate a new access token
+    const newAccessToken = generateAccessToken(user);
+
+    // Return the new access token
+    res.status(200).json({
+      message: 'Access token refreshed',
+      accessToken: newAccessToken
+    });
+
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        message: 'Refresh token expired',
+        code: 'REFRESH_TOKEN_EXPIRED'
+      });
+    }
+    res.status(401).json({
+      message: 'Invalid refresh token',
+      code: 'INVALID_REFRESH_TOKEN'
+    });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   logoutUser,
+  refreshAccessToken
 };
