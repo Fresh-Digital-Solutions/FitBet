@@ -71,7 +71,7 @@ const checkFriendship = async (id) => {
       const response = await api.get(`/friends/checkFriendship/${id}`);
       return response.data;
     } catch (error) {
-      console.error('Error with deleteUserFriend API call:', error);
+      console.error('Error with checkFriendship API call:', error);
       throw error;
     }
   };

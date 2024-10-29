@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import { SafeAreaView,View, Text, TextInput, FlatList, TouchableOpacity, Alert, StyleSheet } from "react-native";
-import { useRouter, Redirect } from "expo-router"; // Import useRouter hook
+import { SafeAreaView, View, Text, TextInput, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
+import { useRouter } from "expo-router";
 import { searchUsers } from "../../services/user";
+import { Ionicons } from "@expo/vector-icons"; // Importing Ionicons for search icon
 
 const SearchPage = () => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const router = useRouter(); // Initialize router
+  const router = useRouter();
 
   const handleSearch = async () => {
     if (!query.trim()) {
@@ -27,40 +28,39 @@ const SearchPage = () => {
   };
 
   const handleUserSelect = (user) => {
-    // Navigate to the dynamic profile page with the user ID
     router.push(`/${user.id}`);
   };
 
   const renderItem = ({ item }) => (
     <TouchableOpacity style={styles.resultItem} onPress={() => handleUserSelect(item)}>
       <Text style={styles.userName}>{item.name}</Text>
-      <Text style={styles.userEmail}>{item.email}</Text>
     </TouchableOpacity>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Search for Users</Text>
-      
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Search by name or email"
-        value={query}
-        onChangeText={setQuery}
-        onSubmitEditing={handleSearch}
-        returnKeyType="search"
-      />
-
-      <TouchableOpacity style={styles.searchButton} onPress={handleSearch} disabled={loading}>
-        <Text style={styles.searchButtonText}>{loading ? "Searching..." : "Search"}</Text>
-      </TouchableOpacity>
-
-      <FlatList
-        data={results}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        ListEmptyComponent={<Text style={styles.noResultsText}>No results found</Text>}
-      />
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={20} color="#4CAF50" style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search by name or email"
+          value={query}
+          onChangeText={setQuery}
+          onSubmitEditing={handleSearch}
+          returnKeyType="search"
+        />
+      </View>
+      {loading ? (
+        <ActivityIndicator size="large" color="#4C8EF7" style={styles.loader} />
+      ) : (
+        <FlatList
+          data={results}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
+          ListEmptyComponent={!loading && <Text style={styles.emptyText}>Search by name</Text>}
+          contentContainerStyle={styles.resultsContainer}
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -68,59 +68,68 @@ const SearchPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: "#F3F4F6",
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    backgroundColor: "#F9FAFB",
   },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 16,
-    textAlign: "center",
-    color: "#333",
-  },
-  searchInput: {
-    height: 50,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    marginBottom: 12,
-  },
-  searchButton: {
-    backgroundColor: "#87DF4F",
-    borderRadius: 8,
-    paddingVertical: 12,
+  searchContainer: {
+    flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
-  },
-  searchButtonText: {
-    color: "#FFF",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  resultItem: {
     backgroundColor: "#FFF",
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 10,
+    borderColor: "#4CAF50",
+    borderWidth: 1,
+    borderRadius: 25,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     shadowColor: "#000",
     shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 4,
+    height: 50,
+    margin:20,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: "#333",
+  },
+  loader: {
+    marginTop: 20,
+  },
+  resultsContainer: {
+    paddingBottom: 20,
+  },
+  resultItem: {
+    backgroundColor: "#FFFFFF",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 3 },
     shadowRadius: 6,
-    elevation: 3,
+    elevation: 2,
+    flexDirection: "row",
+    alignItems: "center",
   },
   userName: {
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 18,
+    fontWeight: "500",
     color: "#333",
   },
   userEmail: {
     fontSize: 14,
-    color: "#666",
+    color: "#888",
+    marginTop: 2,
   },
-  noResultsText: {
+  emptyText: {
     textAlign: "center",
-    color: "#666",
     fontSize: 16,
+    color: "#888",
     marginTop: 20,
   },
 });
