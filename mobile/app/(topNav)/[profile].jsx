@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Button, Alert } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { getAUser, sendFriendRequest } from "../../services/user";
-import { checkFriendship } from "../../services/friends";
+import { getAUser } from "../../services/user";
+import { checkFriendship, sendFriendRequest } from "../../services/friends";
 
 const ProfilePage = () => {
   const { profile: userId } = useLocalSearchParams(); // Profile user ID
   const [user, setUser] = useState(null);
-  const [isFriend, setIsFriend] = useState(false);
+  const [friendStatus, setFriendStatus] = useState("No Request");
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -16,8 +16,8 @@ const ProfilePage = () => {
         setUser(userData);
 
         // Check friendship status
-        const friendshipStatus = await checkFriendship(userId);
-        setIsFriend(friendshipStatus.areFriends);
+        const { status } = await checkFriendship(userId);
+        setFriendStatus(status);
       } catch (error) {
         console.error("Failed to fetch data:", error);
       }
@@ -30,7 +30,7 @@ const ProfilePage = () => {
     try {
       await sendFriendRequest(userId);
       Alert.alert("Friend request sent!");
-      setIsFriend(true); // Update UI to show they are now friends
+      setFriendStatus("Pending"); // Update to pending status after sending request
     } catch (error) {
       console.error("Error sending friend request:", error);
       Alert.alert("Error", "Could not send friend request.");
@@ -43,10 +43,17 @@ const ProfilePage = () => {
         <>
           <Text style={styles.userName}>{user.name}</Text>
           <Text style={styles.userEmail}>Email: {user.email}</Text>
-          
-          {/* Conditionally show Add Friend button */}
-          {!isFriend && (
+          {friendStatus === "No Request" && (
             <Button title="Add Friend" onPress={handleAddFriend} />
+          )}
+          {friendStatus === "Pending" && (
+            <Button title="Pending" disabled />
+          )}
+          {friendStatus === "Rejected" && (
+            <Button title="Add Friend" onPress={handleAddFriend} />
+          )}
+          {friendStatus === "Accepted" && (
+            <Text style={styles.friendText}>You are friends</Text>
           )}
         </>
       ) : (
@@ -70,6 +77,11 @@ const styles = StyleSheet.create({
   userEmail: {
     fontSize: 16,
     color: "#666",
+  },
+  friendText: {
+    fontSize: 18,
+    color: "green",
+    marginTop: 8,
   },
 });
 

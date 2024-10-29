@@ -135,24 +135,30 @@ const deleteUserFriend = async (req, res) => {
 };
 
 const checkFriendship = async (req, res) => {
-    const user_id1 = req.user.id; // Authenticated user's ID
-    const { id } = req.params; // ID of the profile being viewed
+    const user_id1 = req.user.id; 
+    const { id } = req.params; 
 
     try {
         const friendship = await prisma.friend.findFirst({
             where: {
                 OR: [
-                    { user_id1, user_id2: id, status: 'Accepted' },
-                    { user_id1: id, user_id2: user_id1, status: 'Accepted' }
+                    { user_id1, user_id2: id },
+                    { user_id1: id, user_id2: user_id1 }
                 ]
+            },
+            select: {
+                status: true
             }
         });
 
-        res.status(200).json({ areFriends: Boolean(friendship) });
+        res.status(200).json({
+            status: friendship ? friendship.status : "No Request"
+        });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+
 
 
 module.exports = {

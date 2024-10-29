@@ -82,21 +82,26 @@ const updateUser = async (req, res) => {
 
 const searchUsers = async (req, res) => {
     const { query } = req.query;  // Query parameter, e.g., a name or email substring
-  
+    const id  = req.user.id
     try {
-      const users = await prisma.user.findMany({
-        where: {
-          OR: [
-            { name: { contains: query, mode: 'insensitive' } },
-            { email: { contains: query, mode: 'insensitive' } },
-          ]
-        },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        }
-      });
+        const users = await prisma.user.findMany({
+            where: {
+              AND: [
+                {
+                  OR: [
+                    { name: { contains: query, mode: 'insensitive' } },
+                    { email: { contains: query, mode: 'insensitive' } },
+                  ]
+                },
+                { id: { not: id } } 
+              ]
+            },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            }
+          });
   
       res.status(200).json(users);
     } catch (error) {
