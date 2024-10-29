@@ -1,26 +1,25 @@
 import { useState } from 'react'
 import { View, Text, StyleSheet, Button, Image } from 'react-native';
 import { router } from 'expo-router';
-import LogoutButton from '../../components/LogoutButton';
+
 import CustomButton from "../../components/CustomButton";
 import WorkoutImage from '../../assets/images/undraw_workout_img.png'
 const HomeScreen = () => {
   const [isLoading, setLoading] = useState();
 
   const startGoal = () => {
-    router.push('/goal')
+    router.push('/bet')
   }
   return (
       <View style={styles.content}>
-      <Image source={ WorkoutImage} style={styles.image} />
+      <Image source={WorkoutImage} style={styles.image} />
         <Text style={styles.title}>Currently no Workout Goals. Add a friend, set a goal, and start your bet!</Text>
         <CustomButton
-            title="Start a New Goal"
-            handlePress={startGoal}
-            containerStyles={styles.button}
-            isLoading={isLoading}
-          />
-        {/* <LogoutButton /> */}
+          title="Start a New Goal"
+          handlePress={startGoal}
+          containerStyles={styles.button}
+          isLoading={isLoading} 
+        />
     </View> 
   );
 };

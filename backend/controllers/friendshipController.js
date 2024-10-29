@@ -106,7 +106,17 @@ const getUserFriends = async (req, res) => {
             }
         });
 
-        res.status(200).json({ message: "User friends", friends });
+        const friendList = friends.map(friend => {
+            if (friend.user_id1 === userId) {
+                // If user_id1 is the authenticated user, return user2 as the friend
+                return { id: friend.user2.id, name: friend.user2.name };
+            } else {
+                // Otherwise, return user1 as the friend
+                return { id: friend.user1.id, name: friend.user1.name };
+            }
+        });
+
+        res.status(200).json({ message: "User friends", friends: friendList });
     } catch (error) {
         res.status(500).json({
             message: "Error with Server",
