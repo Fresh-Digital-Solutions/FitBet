@@ -17,7 +17,7 @@ const LogoutButton = () => {
       console.error('Error logging out:', error);
     } finally {
       setLoading(false);
-      router.replace('/')
+      router.replace('/login')
     }
   };
 

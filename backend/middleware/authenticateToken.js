@@ -10,6 +10,7 @@ const authenticateToken = async (req, res, next) => {
         const accessToken = authHeader && authHeader.split(' ')[1];
         
         if (!accessToken) {
+            console.log('no access token');
             return res.status(401).json({ 
                 message: 'Access token is required',
                 code: 'NO_TOKEN'

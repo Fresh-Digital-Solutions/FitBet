@@ -53,7 +53,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   button: {
-    width:'80%'
+    backgroundColor: '#87DF4F',
+    borderRadius: 12,
+    minHeight: 62,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '80%',
+    marginBottom: 16,
   }
   
 });

@@ -2,12 +2,12 @@ import { useState } from "react";
 import { Link, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { View, Text, ScrollView, Dimensions, Alert, Image, StyleSheet } from "react-native";
-import CustomButton from "../../components/CustomButton";
-import FormField from "../../components/FormField";
-import icon from '../../assets/images/icon.png';
-import { signup } from "../../services/auth"; // Import the signup function
-import GoogleIcon from '../../assets/images/Google.png';
-import AppleIcon from '../../assets/images/Apple.png';
+import CustomButton from "../../../components/CustomButton";
+import FormField from "../../../components/FormField";
+import icon from '../../../assets/images/icon.png';
+import { signup } from "../../../services/auth"; // Import the signup function
+import GoogleIcon from '../../../assets/images/Google.png';
+import AppleIcon from '../../../assets/images/Apple.png';
 
 const SignUpScreen = () => {
   const [isSubmitting, setSubmitting] = useState(false);
@@ -20,7 +20,6 @@ const SignUpScreen = () => {
 
   const submit = async () => {
     if (
-      form.name === "" ||
       form.email === "" ||
       form.password === "" ||
       form.confirmPassword === ""
@@ -37,14 +36,13 @@ const SignUpScreen = () => {
     try {
       // Call the signup API
       const response = await signup({
-        name: form.name,
         email: form.email,
         password: form.password,
       });
       Alert.alert("Success", "Sign-up successful");
 
       // Redirect to the /home route in the (tabs) folder
-      router.push('/home');
+      router.push('/onBoarding');
     } catch (error) {
       Alert.alert("Error", error.message);
     }

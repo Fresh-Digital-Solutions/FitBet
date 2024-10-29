@@ -93,7 +93,7 @@ const LoginScreen = () => {
               Don't have an account?
             </Text>
             <Link
-              href="/signup"
+              href="/signupWithEmail"
               style={styles.link}
             >
               Signup
