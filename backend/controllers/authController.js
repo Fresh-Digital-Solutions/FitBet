@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('@prisma/client');
 const { generateAccessToken, generateRefreshToken } = require('../utils/generateTokens');
 const jwt = require('jsonwebtoken');
-
+const stripe = require('stripe')(process.env.STRIPE_KEY);
 const prisma = new PrismaClient();
 
 
@@ -49,9 +49,23 @@ const registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    let customer;
+    try {
+      customer = await stripe.customers.create({
+        email: email,
+      });
+    } catch (stripeError) {
+      console.error('Stripe account creation error:', stripeError);
+      return res.status(500).json({
+        message: 'Failed to create Stripe account',
+        code: 'STRIPE_ERROR'
+      });
+    }
+
     const user = await prisma.user.create({
       data: {
         email,
+        stripeId: customer.id,
         password_hash: hashedPassword,
         refreshTokenVersion: 1
       },
@@ -64,6 +78,7 @@ const registerUser = async (req, res) => {
 
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
+
 
     res.status(201).json({ 
       message: 'User registered successfully',
