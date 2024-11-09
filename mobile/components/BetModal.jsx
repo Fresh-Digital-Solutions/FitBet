@@ -2,16 +2,30 @@ import React, { useState } from 'react';
 import { View, Text, Modal, TextInput, TouchableOpacity } from 'react-native';
 import { GestureHandlerRootView, PanGestureHandler } from 'react-native-gesture-handler';
 import { FontAwesome } from '@expo/vector-icons'; // For using icons
+import DropdownComponent from './FriendDropDownMenu';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
-const BetModal = ({ visible, onClose }) => {
+const BetModal = ({ visible, onClose, onProceedToPayment }) => {
   const [betAmount, setBetAmount] = useState('');
   const [workoutsPerWeek, setWorkoutsPerWeek] = useState('');
-  const [date, setDate] = useState('');
+  const [selectedFriend, setSelectedFriend] = useState();
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const handleGesture = (event) => {
     if (event.nativeEvent.translationY > 100) {
       onClose(); 
     }
+  };
+
+  const handleSendRequest = () => {
+      onProceedToPayment();
+  };
+
+  const handleDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShowDatePicker(Platform.OS === 'ios'); // Keep picker open on iOS
+    setDate(currentDate);
   };
 
   return (
@@ -27,12 +41,9 @@ const BetModal = ({ visible, onClose }) => {
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <FontAwesome name="chevron-down" size={24} color="white" />
             </TouchableOpacity>
-
-            <TextInput
-              style={styles.input}
-              placeholder="Choose A Friend"
-              placeholderTextColor="#00FF00"
-            />
+            
+            <DropdownComponent />
+            
 
             <View style={styles.row}>
               <TextInput
@@ -41,7 +52,7 @@ const BetModal = ({ visible, onClose }) => {
                 value={betAmount}
                 onChangeText={setBetAmount}
                 keyboardType="numeric"
-                placeholderTextColor="#00FF00"
+                placeholderTextColor="#FFFFFF"
               />
               <TextInput
                 style={styles.inputSmall}
@@ -49,19 +60,26 @@ const BetModal = ({ visible, onClose }) => {
                 value={workoutsPerWeek}
                 onChangeText={setWorkoutsPerWeek}
                 keyboardType="numeric"
-                placeholderTextColor="#00FF00"
+                placeholderTextColor="#FFFFFF"
               />
             </View>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Start & End Date"
-              value={date}
-              onChangeText={setDate}
-              placeholderTextColor="#00FF00"
-            />
+            {/* Date Picker for Start & End Date */}
+            <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateInput}>
+              <Text style={{ color: '#87DF4F' }}>
+                {date ? date.toDateString() : 'Start & End Date'}
+              </Text>
+            </TouchableOpacity>
+            {showDatePicker && (
+              <DateTimePicker
+                value={date}
+                mode="date"
+                display="default"
+                onChange={handleDateChange}
+              />
+            )}
 
-            <TouchableOpacity style={styles.submitButton} onPress={() => alert('Challenge Sent!')}>
+            <TouchableOpacity style={styles.submitButton} onPress={handleSendRequest}>
               <Text style={styles.submitButtonText}>Send Challenge Request</Text>
             </TouchableOpacity>
           </View>
@@ -90,15 +108,19 @@ const styles = {
     alignSelf: 'center',
     marginBottom: 10,
   },
-  input: {
+  dropdownContainer: {
     width: '90%',
     height: 50,
-    borderWidth: 2,
-    borderColor: '#87DF4F', 
+    borderWidth: 1.5,
+    borderColor: '#87DF4F',
     borderRadius: 10,
-    padding: 10,
-    marginBottom: 15,
-    color: 'white',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  dropdown: {
+    color: '#FFFFFF',
+    width: '100%',
+    height: '100%',
   },
   row: {
     flexDirection: 'row',
@@ -108,17 +130,28 @@ const styles = {
   },
   inputSmall: {
     width: '48%',
+    height: 50,
     borderWidth: 2,
     borderColor: '#87DF4F', 
     borderRadius: 10,
     padding: 10,
     color: 'white',
   },
+  dateInput: {
+    width: '90%',
+    height: 50,
+    borderWidth: 1.5,
+    borderColor: '#87DF4F',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   submitButton: {
     width: '90%',
     padding: 15,
     backgroundColor: '#87DF4F',
-    borderRadius: 5,
+    borderRadius: 10,
     alignItems: 'center',
   },
   submitButtonText: {

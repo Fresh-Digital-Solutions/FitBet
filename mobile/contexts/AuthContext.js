@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { getToken, deleteToken } from '../services/tokenUtils'; // Updated path to tokenUtils
-
+import { router } from 'expo-router';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
       setIsLoggedIn(true);
     } else {
       setIsLoggedIn(false);
+      router.push('/')
     }
     setLoading(false);
   };
