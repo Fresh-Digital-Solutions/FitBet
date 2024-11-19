@@ -1,66 +1,63 @@
-// app/(tabs)/_layout.js
 import { Tabs } from 'expo-router';
 import React, { useState } from 'react';
 import Header from '../../components/Header';
 import TabBar from '../../components/Tabbar';
 import BetModal from '../../components/BetModal'; 
-import CardInputModal from '../../components/CardInputModal';
+import { BetProvider } from '../../contexts/BettingContext';
+import HomeHeader from '../../components/HomeHeader';
+
 export default function Layout() {
   const [isBetModalVisible, setBetModalVisible] = useState(false);
-  const [isCardInputModalVisible, setCardInputModalVisible] = useState(false);
 
   const openBetModal = () => setBetModalVisible(true);
   const closeBetModal = () => setBetModalVisible(false);
 
-  const openCardInputModal = () => {
-    setBetModalVisible(false); // Close Bet Modal first
-    setCardInputModalVisible(true);
-  };
-
-  const closeCardInputModal = () => setCardInputModalVisible(false);
-
-  const handlePaymentSuccess = () => {
-    closeCardInputModal();
-    alert('Payment was successful!');
-  };
-
   return (
-    <>
-      <Tabs
-        screenOptions={{
-          header: () => <Header />,
-        }}
-        tabBar={(props) => <TabBar {...props} />}
-      >
-        <Tabs.Screen name="home" options={{ title: 'Home' }} />
-        
-        <Tabs.Screen
-          name="bet"
-          options={{ title: 'Bet' }}
-          listeners={{
-            tabPress: e => {
-              e.preventDefault(); // Prevent default navigation
-              openBetModal();     // Open the modal instead
-            },
+    <BetProvider>
+      <>
+        <Tabs
+          screenOptions={{
+            headerShown: true, // Enable header globally
           }}
+          tabBar={(props) => <TabBar {...props} />} // Custom TabBar
+        >
+          <Tabs.Screen
+            name="home"
+            options={{
+              title: 'Home',
+              header: () => <HomeHeader />, // Custom header for the Home screen
+            }}
+          />
+
+          <Tabs.Screen
+            name="bet"
+            options={{
+              title: 'Bet',
+              header: () => <Header />, // Default Header or a different custom one
+            }}
+            listeners={{
+              tabPress: (e) => {
+                e.preventDefault(); // Prevent default navigation
+                openBetModal();     // Open the modal instead
+              },
+            }}
+          />
+
+          <Tabs.Screen
+            name="profile"
+            options={{
+              title: 'Profile',
+              header: () => <Header />, // Default Header or another custom one
+            }}
+          />
+        </Tabs>
+
+        {/* Render the BetModal and control its visibility */}
+        <BetModal 
+          visible={isBetModalVisible} 
+          onClose={closeBetModal}
         />
-
-        <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
-      </Tabs>
-
-       {/* Render the BetModal and control its visibility */}
-       <BetModal 
-        visible={isBetModalVisible} 
-        onClose={closeBetModal}
-        onProceedToPayment={openCardInputModal} // Open Card Input Modal when ready
-      />
-
-      {/* Render the CardInputModal and control its visibility */}
-      <CardInputModal 
-        visible={isCardInputModalVisible} 
-        onClose={closeCardInputModal} 
-        onPaymentSuccess={handlePaymentSuccess}
-      />
-    </>
+      </>
+    </BetProvider>
   );
 }

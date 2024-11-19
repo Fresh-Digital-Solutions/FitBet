@@ -1,71 +1,84 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { Dropdown } from 'react-native-element-dropdown';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, Modal } from 'react-native';
+import { getUserFriends } from '../services/friends';
+import { useBet } from '../contexts/BettingContext';
 
-const data = [
-  { label: 'Item 1', value: '1' },
-  { label: 'Item 2', value: '2' },
-  { label: 'Item 3', value: '3' },
-  { label: 'Item 4', value: '4' },
-  { label: 'Item 5', value: '5' },
-  { label: 'Item 6', value: '6' },
-  { label: 'Item 7', value: '7' },
-  { label: 'Item 8', value: '8' },
-];
+const defaultProfileImage = "https://via.placeholder.com/50"; // Placeholder image URL
 
 const DropdownComponent = () => {
-  const [value, setValue] = useState(null);
-  const [isFocus, setIsFocus] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [friends, setFriends] = useState([]);
+  const { selectedFriend, handleSelectFriend } = useBet();
 
-  const renderLabel = () => {
-    if (value || isFocus) {
-      return (
-        <Text style={[styles.label, isFocus && { color: '#87DF4F' }]}>
-          Select A Friend
-        </Text>
-      );
-    }
-    return null;
-  };
+  useEffect(() => {
+    const fetchFriendData = async () => {
+      try {
+        const userFriends = await getUserFriends();
+        const formattedFriends = userFriends.friends.map(friend => ({
+          label: friend.name,
+          value: friend.id,
+          imageUrl: friend.imageUrl || defaultProfileImage, 
+        }));
+        setFriends(formattedFriends);
+      } catch (error) {
+        console.error("Error fetching user or friends:", error);
+      }
+    };
 
-  const renderItem = (item) => {
-    const isSelected = item.value === value;
-    return (
-      <View style={[styles.itemContainer, isSelected && styles.selectedItemContainer]}>
-        <Text style={[styles.itemText, isSelected && styles.selectedItemText]}>
-          {item.label}
-        </Text>
-      </View>
-    );
+    fetchFriendData();
+  }, []);
+
+  const selectFriend = (friend) => {
+    handleSelectFriend(friend);
+    setIsModalVisible(false);
   };
 
   return (
     <View style={styles.container}>
-      {renderLabel()}
-      <Dropdown
-        style={[styles.dropdown, isFocus && { borderColor: '#87DF4F' }]}
-        placeholderStyle={styles.placeholderStyle}
-        selectedTextStyle={styles.selectedTextStyle}
-        inputSearchStyle={styles.inputSearchStyle}
-        containerStyle={styles.dropdownMenu}
-        itemContainerStyle= {styles.itemContainer}
-        itemTextStyle= {styles.itemText}
-        data={data}
-        search
-        maxHeight={300}
-        labelField="label"
-        valueField="value"
-        placeholder={!isFocus ? 'Select a Friend' : ''}
-        searchPlaceholder="Search..."
-        value={value}
-        onFocus={() => setIsFocus(true)}
-        onBlur={() => setIsFocus(false)}
-        onChange={item => {
-          setValue(item.value);
-          setIsFocus(false);
-        }}
-        renderItem={renderItem}
-      />
+      <TouchableOpacity 
+        style={styles.dropdownTrigger} 
+        onPress={() => setIsModalVisible(true)}
+      >
+        {selectedFriend && (
+          <Image 
+            source={{ uri: selectedFriend.imageUrl }}
+            style={styles.profileImage}
+          />
+        )}
+        <Text style={styles.selectedText}>
+          {selectedFriend ? selectedFriend.label : "Select a friend"}
+        </Text>
+      </TouchableOpacity>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select a Friend</Text>
+            <FlatList
+              data={friends}
+              keyExtractor={(item) => item.value}
+              renderItem={({ item }) => (
+                <TouchableOpacity 
+                  style={styles.itemContainer} 
+                  onPress={() => selectFriend(item)}
+                >
+                  <Image source={{ uri: item.imageUrl }} style={styles.itemImage} />
+                  <Text style={styles.itemText}>{item.label}</Text>
+                </TouchableOpacity>
+              )}
+              style={styles.flatListContainer} // Makes the list full width
+            />
+            <TouchableOpacity style={styles.closeButton} onPress={() => setIsModalVisible(false)}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -74,70 +87,86 @@ export default DropdownComponent;
 
 const styles = StyleSheet.create({
   container: {
-    width:'98%',
-    padding: 16,
-    
+    width: '100%',
+    alignItems: 'center',
+    marginVertical: 10,
   },
-  dropdownMenu: {
+  dropdownTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 70,
     borderColor: '#87DF4F',
     backgroundColor: '#566072',
     borderWidth: 2,
-    borderRadius: 10,
-    paddingHorizontal: 8,
-  },    
-  dropdown: {
-    height: 50,
-    borderColor: '#87DF4F',
-    backgroundColor: '#566072',
-    borderWidth: 2,
-    borderRadius: 10,
-    paddingHorizontal: 8,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    width: '100%',
   },
-  icon: {
-    marginRight: 5,
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
   },
-  label: {
-    position: 'absolute',
-    backgroundColor: '#566072',
+  selectedText: {
+    fontSize: 16,
     color: 'white',
-    left: 22,
-    top: 8,
-    zIndex: 999,
-    paddingHorizontal: 8,
-    fontSize: 14,
+    textAlign: 'center',
   },
-  placeholderStyle: {
-    fontSize: 16,
-    color:'white',
-    textAlign: 'center'
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
   },
-  selectedTextStyle: {
-    fontSize: 16,
-    color:'white',
-    textAlign: 'center'
-    
+  modalContent: {
+    width: '100%',
+    height: '50%',
+    backgroundColor: '#313948',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    color: 'white',
+    marginBottom: 10,
+    fontWeight: 'bold',
+  },
+  flatListContainer: {
+    width: '100%',
   },
   itemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
     backgroundColor: '#87DF4F',
-    marginVertical: 3,
-    marginHorizontal: 10,
+    marginVertical: 5,
     borderRadius: 10,
+    width: '100%',
+  },
+  itemImage: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    marginRight: 12,
   },
   itemText: {
-    color: 'white',
-    textAlign:'center',
-    fontWeight: 600,
-    fontSize: 18
-  },
-  selectedItemContainer: {
-    backgroundColor: '#313948',
-  },
-  selectedItemText: {
-    color: '#1F2A36', 
+    color: 'black',
+    fontSize: 18,
     fontWeight: '600',
   },
-  inputSearchStyle: {
-    height: 40,
+  closeButton: {
+    marginTop: 15, // Position closer to the content
+    padding: 10,
+    backgroundColor: 'red',
+    borderRadius: 10,
+    alignItems: 'center',
+    width: '50%', // Adjust the width of the close button as needed
+  },
+  closeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
     fontSize: 16,
   },
 });

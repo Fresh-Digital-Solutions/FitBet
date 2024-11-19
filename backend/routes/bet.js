@@ -8,7 +8,8 @@ const {
     GetUserBet,
     GetUserCompletedBets,
     GetUserPendingBetsSent,
-    GetUserWorkoutGoal
+    GetUserWorkoutGoal,
+    createPaymentIntent
 } = require('../controllers/bettingController')
 const authenticateToken = require('../middleware/authenticateToken');
 const router = express.Router();
@@ -17,7 +18,7 @@ const router = express.Router();
 router.post('/send-bet', authenticateToken, SendBetRequest);
 
 // Update a bet request (accept/reject) and handle payments if accepted
-router.put('/update-bet/:id', authenticateToken, UpdateBetRequest);
+router.patch('/update-bet/:id', authenticateToken, UpdateBetRequest);
 
 // Get pending bet requests received by the user
 router.get('/pending-bets', authenticateToken, PendingBetRequest);
@@ -39,5 +40,6 @@ router.get('/pending-bets-sent', authenticateToken, GetUserPendingBetsSent);
 
 // Retrieve the workout goal associated with a specific bet
 router.get('/bet/:betId/workout-goal', authenticateToken, GetUserWorkoutGoal);
+
 
 module.exports = router;
