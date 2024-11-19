@@ -1,7 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-const stripe = require('stripe')(process.env.STRIPE_KEY);
 
 const SendBetRequest = async (req, res) => {
     const id = req.user.id;
@@ -17,114 +16,147 @@ const SendBetRequest = async (req, res) => {
         return res.status(400).json({ message: "End date must be after start date" });
     }
 
-    // Determine if the bet should be active
-    const now = new Date();
-    const startDate = new Date(start_at);
-    const endDate = new Date(ends_at);
-    const isActive = startDate >= now && now < endDate;
-
     try {
-        const [bet, workoutGoal] = await prisma.$transaction([
-            prisma.bet.create({
+        // Check for overlapping bets
+        const overlappingBets = await prisma.bet.findMany({
+            where: {
+                OR: [
+                    { user_id1: id },
+                    { user_id2: id },
+                    { user_id1: user_id2 },
+                    { user_id2: user_id2 }
+                ],
+                AND: [
+                    {
+                        OR: [
+                            {
+                                start_at: {
+                                    lte: new Date(ends_at) // Starts before or on the new bet's end date
+                                }
+                            },
+                            {
+                                ends_at: {
+                                    gte: new Date(start_at) // Ends after or on the new bet's start date
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        });
+
+        if (overlappingBets.length > 0) {
+            return res.status(400).json({
+                message: "There is already a conflicting bet for the given date range"
+            });
+        }
+
+        const user = await prisma.user.findUnique({ where: { id } });
+        if (user.balance < amount) {
+            return res.status(400).json({ message: "Insufficient Fitcoins balance" });
+        }
+
+        const result = await prisma.$transaction(async (tx) => {
+            const bet = await tx.bet.create({
                 data: {
                     user_id1: id,
                     user_id2,
                     amount,
-                    status: "Pending",
-                    active: isActive,
-                    start_at: startDate,
-                    ends_at: endDate,
+                    status: 'Pending',
+                    active: false,
+                    start_at,
+                    ends_at
                 }
-            }),
-            prisma.workoutgoal.create({
-                data: {
-                    user_id1: id,
-                    goal_time,
-                    goal_start_time: new Date(goal_start_time),
-                    goal_end_time: new Date(goal_end_time)
-                }
-            })
-        ]);
-
-        // If both bet and workoutGoal were created successfully
-        if (bet && workoutGoal) {
-            // Update the bet with the workoutGoalId to establish a relationship if needed
-            await prisma.bet.update({
-                where: { id: bet.id },
-                data: { workoutGoalId: workoutGoal.id }
             });
 
-            res.status(200).json({ message: "Success", workoutGoal, bet });
-        } else {
-            res.status(500).json({ message: "Failed to create bet and workout goal" });
-        }
+            const workoutGoal = await tx.workoutGoal.create({
+                data: {
+                    user_id1: id,
+                    amount_time: goal_time,
+                    start_at: goal_start_time,
+                    end_at: goal_end_time,
+                    betId: bet.id  // Direct association using the schema relation
+                }
+            });
+
+            // Deduct amount from user's balance
+            await tx.user.update({
+                where: { id },
+                data: { balance: { decrement: amount } }
+            });
+
+
+            return { bet, workoutGoal };
+        });
+
+        res.status(201).json({
+            message: "Bet request sent successfully",
+            data: result
+        });
     } catch (error) {
         console.error("Error in SendBetRequest:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
-}
+};
+
+
 // This updates the bet request either accepted or rejected if accepted then we need to setup payment intent with stripe
-const UpdateBetRequest = async (req,res) => {
+const UpdateBetRequest = async (req, res) => {
     const { status } = req.body;
     const { id } = req.params;
 
-    try{
-        const bet = await prisma.bet.update({
+    try {
+        const bet = await prisma.bet.findUnique({
             where: { id },
-            data: { status },
-            select: {
-                user_id1: true,
-                user_id2: true,
-                amount: true
-            }
-            
         });
 
-        let paymentIntentUser1;
-        let paymentIntentUser2;
-
-        if(bet.status == "Accepted"){
-            try{
-                const [user1, user2] = await prisma.$transaction([
-                    prisma.user.findUnique({
-                        where: { id: bet.user_id1 },
-                        select: { stripeId: true}
-                    }),
-                    prisma.user.findUnique({
-                        where: { id: bet.user_id2 },
-                        select: { stripeId: true}
-                    })
-                ])
-                paymentIntentUser1 = await stripe.paymentIntents.create({
-                    amount: bet.amount * 100,
-                    currency: 'usd',
-                    customer: user1.stripeId
-                });
-
-                paymentIntentUser2 = await stripe.paymentIntents.create({
-                    amount: bet.amount * 100,
-                    currency: 'usd',
-                    customer: user2.stripeId
-                });
-            }catch(err){
-                console.error("Stripe API error:", err);
-                res.status(500).json({message: "Error with Stripe API call:" , err})
-            }
+        if (!bet) {
+            return res.status(404).json({ message: "Bet not found" });
         }
-        
-        res.status(200).json({
-            message: 'Bet request updated!',
-            bet,
-            paymentIntentUser1: paymentIntentUser1 || null,
-            paymentIntentUser2: paymentIntentUser2 || null
-          });
-    }catch(error){
-        res.status(500).json({
-            message: "Error with Server",
-            error: error.message
-        });
+
+        if (status === "Accepted") {
+            // Check if user2 has enough Fitcoins to accept the bet
+            const user2 = await prisma.user.findUnique({ where: { id: bet.user_id2 } });
+
+            if (user2.balance < bet.amount) {
+                return res.status(400).json({ message: "Insufficient Fitcoins balance to accept the bet." });
+            }
+
+            // Update the bet status, mark it as active, and decrement user2's balance
+            await prisma.$transaction([
+                prisma.bet.update({
+                    where: { id },
+                    data: { status, active: true },
+                }),
+                prisma.user.update({
+                    where: { id: bet.user_id2 },
+                    data: { balance: { decrement: bet.amount } },
+                }),
+            ]);
+
+            res.status(200).json({ message: "Bet accepted and activated!" });
+        } else if (status === "Rejected") {
+            // Refund Fitcoins to user1 (the initiator) if the bet is rejected
+            await prisma.$transaction([
+                prisma.bet.update({
+                    where: { id },
+                    data: { status },
+                }),
+                prisma.user.update({
+                    where: { id: bet.user_id1 },
+                    data: { balance: { increment: bet.amount } },
+                }),
+            ]);
+
+            res.status(200).json({ message: "Bet rejected and Fitcoins refunded!" });
+        } else {
+            res.status(400).json({ message: "Invalid status" });
+        }
+    } catch (error) {
+        console.error("Error in UpdateBetRequest:", error);
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
-}
+};
 // this gets the pending request of the user
 const PendingBetRequest = async (req,res) => {
     const user_id2 = req.user.id;
@@ -181,7 +213,7 @@ const GetUserAllBets = async (req, res) => {
             include: {
                 user1: { select: { id: true, name: true } },
                 user2: { select: { id: true, name: true } },
-                workoutGoal: { select: { goal: true } } // include goal details if needed
+                workoutGoal: { select: { amount_time: true } } // include goal details if needed
             }
         });
 
@@ -222,7 +254,7 @@ const GetUserAllBets = async (req, res) => {
 //This gets the users active bet
 const GetUserBet = async (req, res) => {
     const userId = req.user.id;
-
+    
     try {
         // Fetch the active bet for the user
         const activeBet = await prisma.bet.findFirst({
@@ -236,7 +268,7 @@ const GetUserBet = async (req, res) => {
             include: {
                 user1: { select: { id: true, name: true } },
                 user2: { select: { id: true, name: true } },
-                workoutGoal: { select: { goal: true } } // Include goal details if needed
+                workoutGoal: { select: { amount_time: true } } // Include goal details if needed
             }
         });
 
@@ -244,7 +276,6 @@ const GetUserBet = async (req, res) => {
             return res.status(404).json({ message: "No active bet found for the user" });
         }
 
-        // Format response to show counterpart details
         const betData = {
             id: activeBet.id,
             counterpart: activeBet.user_id1 === userId 
@@ -259,6 +290,7 @@ const GetUserBet = async (req, res) => {
 
         res.status(200).json({ message: "User active bet", bet: betData });
     } catch (error) {
+        console.log(error.message);
         res.status(500).json({
             message: "Error with Server",
             error: error.message
@@ -283,7 +315,7 @@ const GetUserCompletedBets = async (req, res) => {
             include: {
                 user1: { select: { id: true, name: true } },
                 user2: { select: { id: true, name: true } },
-                workoutGoal: { select: { goal: true } } // Include goal details if needed
+                workoutGoal: { select: { amount_time: true } } // Include goal details if needed
             }
         });
 
@@ -322,7 +354,7 @@ const GetUserPendingBetsSent = async (req, res) => {
             },
             include: {
                 user2: { select: { id: true, name: true } }, // Include the counterpart (receiver) details
-                workoutGoal: { select: { goal: true } } // Include workout goal details if needed
+                workoutGoal: { select: { amount_time: true } } 
             }
         });
 
@@ -385,5 +417,5 @@ module.exports = {
     GetUserBet,
     GetUserCompletedBets,
     GetUserPendingBetsSent,
-    GetUserWorkoutGoal
+    GetUserWorkoutGoal,
 };

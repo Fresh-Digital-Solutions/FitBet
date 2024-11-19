@@ -3,7 +3,7 @@ import { api } from './tokenUtils';
 // Send Bet Request
 const sendBetRequest = async ({ user_id2, amount, start_at, ends_at, goal_time, goal_start_time, goal_end_time }) => {
   try {
-    const response = await api.post('/send-bet', { user_id2, amount, start_at, ends_at, goal_time, goal_start_time, goal_end_time });
+    const response = await api.post('/bets/send-bet', { user_id2, amount, start_at, ends_at, goal_time, goal_start_time, goal_end_time });
     return response.data;
   } catch (error) {
     console.error('Error with sendBetRequest API call:', error);
@@ -14,7 +14,7 @@ const sendBetRequest = async ({ user_id2, amount, start_at, ends_at, goal_time, 
 // Update Bet Request (accept/reject)
 const updateBetRequest = async (id, status) => {
   try {
-    const response = await api.put(`/update-bet/${id}`, { status });
+    const response = await api.put(`/bets/update-bet/${id}`, { status });
     return response.data;
   } catch (error) {
     console.error('Error with updateBetRequest API call:', error);
@@ -25,7 +25,7 @@ const updateBetRequest = async (id, status) => {
 // Get Pending Bet Requests Received by the User
 const getPendingBetRequests = async () => {
   try {
-    const response = await api.get('/pending-bets');
+    const response = await api.get('/bets/pending-bets');
     return response.data;
   } catch (error) {
     console.error('Error with getPendingBetRequests API call:', error);
@@ -36,7 +36,7 @@ const getPendingBetRequests = async () => {
 // Cancel Bet Request
 const cancelBetRequest = async (id) => {
   try {
-    const response = await api.delete(`/cancel-bet/${id}`);
+    const response = await api.delete(`/bets/cancel-bet/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error with cancelBetRequest API call:', error);
@@ -47,7 +47,7 @@ const cancelBetRequest = async (id) => {
 // Get All Accepted Bets for the User
 const getUserAllBets = async () => {
   try {
-    const response = await api.get('/all-bets');
+    const response = await api.get('/bets/bets/all-bets');
     return response.data;
   } catch (error) {
     console.error('Error with getUserAllBets API call:', error);
@@ -58,7 +58,7 @@ const getUserAllBets = async () => {
 // Get User's Active Bet
 const getUserActiveBet = async () => {
   try {
-    const response = await api.get('/active-bet');
+    const response = await api.get('/bets/active-bet');
     return response.data;
   } catch (error) {
     console.error('Error with getUserActiveBet API call:', error);
@@ -69,7 +69,7 @@ const getUserActiveBet = async () => {
 // Get Completed Bets for the User
 const getUserCompletedBets = async () => {
   try {
-    const response = await api.get('/completed-bets');
+    const response = await api.get('/bets/completed-bets');
     return response.data;
   } catch (error) {
     console.error('Error with getUserCompletedBets API call:', error);
@@ -80,7 +80,7 @@ const getUserCompletedBets = async () => {
 // Get Pending Bet Requests Sent by the User
 const getUserPendingBetsSent = async () => {
   try {
-    const response = await api.get('/pending-bets-sent');
+    const response = await api.get('/bets/pending-bets-sent');
     return response.data;
   } catch (error) {
     console.error('Error with getUserPendingBetsSent API call:', error);
@@ -91,7 +91,7 @@ const getUserPendingBetsSent = async () => {
 // Get Workout Goal Associated with a Specific Bet
 const getUserWorkoutGoal = async (betId) => {
   try {
-    const response = await api.get(`/bet/${betId}/workout-goal`);
+    const response = await api.get(`/bets/bet/${betId}/workout-goal`);
     return response.data;
   } catch (error) {
     console.error('Error with getUserWorkoutGoal API call:', error);
@@ -108,5 +108,5 @@ export {
   getUserActiveBet,
   getUserCompletedBets,
   getUserPendingBetsSent,
-  getUserWorkoutGoal
+  getUserWorkoutGoal,
 };

@@ -16,7 +16,7 @@ const router = express.Router();
 router.post('/send', authenticateToken, sendFriendRequest);
 
 // Route to update a friend request (accept/reject)
-router.put('/update/:id', authenticateToken, updateFriendRequest);
+router.patch('/update/:id', authenticateToken, updateFriendRequest);
 
 // Route to get all pending friend requests for a user
 router.get('/pending', authenticateToken, pendingFriendRequests);
